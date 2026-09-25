@@ -1,0 +1,14 @@
+@import './base.css';
+
+/* playground 固定浅色主题（双端组件库均为浅色设计，禁用 base.css 的暗色跟随） */
+body {
+  background: #f5f7fa;
+  color: #303133;
+}
+
+#app {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  font-weight: normal;
+}
