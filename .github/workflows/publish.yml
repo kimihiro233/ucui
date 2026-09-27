@@ -1,0 +1,60 @@
+name: Publish to npm
+
+# 发布方式：在 GitHub 仓库 Releases 页面创建并发布 Release
+#   - tag 必须是 v 前缀且与 package.json version 一致（如 v0.1.0）
+#   - 正式 Release → npm latest 标签
+#   - Pre-release（勾选 "Set as a pre-release"）→ npm beta 标签
+# 前置：仓库 Settings → Secrets and variables → Actions 添加 NPM_TOKEN（npm Automation Token）
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # npm provenance 来源证明所需
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm run test:run
+
+      - name: Library build
+        run: npm run build
+
+      - name: 校验 tag 与 package.json 版本一致
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json 版本 ($PKG_VERSION) 与 Release tag ($GITHUB_REF_NAME) 不一致，应将 package.json 改为 $TAG_VERSION 后重新发布 Release"
+            exit 1
+          fi
+          echo "发布版本: $PKG_VERSION (prerelease=${{ github.event.release.prerelease }})"
+
+      - name: 预览打包内容（npm pack dry-run）
+        run: npm pack --dry-run
+
+      - name: Publish（正式 → latest / 预发布 → beta）
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            npm publish --provenance --tag beta
+          else
+            npm publish --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
