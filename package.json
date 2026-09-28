@@ -1,6 +1,6 @@
 {
   "name": "@lacunist/ucui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "一套代码，双端渲染的 Vue 3 组件库：element-plus / ant-design-vue 统一 API，运行时可切换",
   "keywords": [
     "vue",
