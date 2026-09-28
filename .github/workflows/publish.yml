@@ -26,9 +26,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
           cache: npm
-        # 注意：不设 registry-url，避免 setup-node 生成带空 _authToken 的 .npmrc
-        # 干扰 OIDC Trusted Publisher 认证
+        # registry-url 生成 .npmrc（_authToken=${NODE_AUTH_TOKEN}，未设则为空）
+        # 配合下方 npm publish --provenance 走 OIDC Trusted Publisher，无需 NPM_TOKEN
 
       - name: Install dependencies
         run: npm ci
@@ -51,6 +52,15 @@ jobs:
 
       - name: 预览打包内容（npm pack dry-run）
         run: npm pack --dry-run
+
+      - name: 清空可能残留的 auth token，确保走 OIDC
+        run: |
+          echo "=== .npmrc 内容（脱敏前） ==="
+          cat ~/.npmrc 2>/dev/null || echo "(无用户级 .npmrc)"
+          # 移除 .npmrc 中所有 auth token 行，让 --provenance 触发 OIDC
+          npm config delete //registry.npmjs.org/:_authToken || true
+          echo "=== 确认 NODE_AUTH_TOKEN 为空 ==="
+          echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}"
 
       - name: Publish（正式 → latest / 预发布 → beta）
         run: |
