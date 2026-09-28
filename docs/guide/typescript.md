@@ -5,7 +5,7 @@ UcUI 是纯 JS 源码 + 全量类型声明（`types/` 目录），TS 项目开�
 ## 组件 props / emits
 
 ```ts
-import { UcSelect, UcOption } from 'ucui'
+import { UcSelect, UcOption } from '@lacunist/ucui'
 
 const options: UcOption[] = [
   { label: '杭州', value: 'hz' },
@@ -21,7 +21,7 @@ SFC 模板中全局注册组件同样有提示（`GlobalComponents` 增强）：
 
 ```ts
 import { ref } from 'vue'
-import { UcForm, UcScrollbar, UcFormInstance } from 'ucui'
+import { UcForm, UcScrollbar, UcFormInstance } from '@lacunist/ucui'
 
 const formRef = ref<InstanceType<typeof UcForm>>()
 formRef.value?.validate().then((ok) => {
@@ -57,7 +57,7 @@ import type {
   UcSize, // 'large' | 'default' | 'small'
   UcFormInstance,
   UcScrollbarInstance,
-} from 'ucui'
+} from '@lacunist/ucui'
 ```
 
 ## 入口与类型对应

@@ -10,9 +10,9 @@
 ## 安装
 
 ```sh
-npm install ucui vue element-plus
+npm install @lacunist/ucui vue element-plus
 # 或
-npm install ucui vue ant-design-vue
+npm install @lacunist/ucui vue ant-design-vue
 ```
 
 `element-plus` / `ant-design-vue` 为可选 peer 依赖：一个项目只需安装你使用的那一套（也都安装则以 `lib` 选项为准）。
@@ -21,7 +21,7 @@ npm install ucui vue ant-design-vue
 
 ```ts
 import { createApp } from 'vue'
-import UcUI from 'ucui'
+import UcUI from '@lacunist/ucui'
 import 'element-plus/dist/index.css'   // 底层库样式由你引入
 import App from './App.vue'
 
@@ -45,7 +45,7 @@ app.mount('#app')
 `install` 时选定底层库；运行中可通过 `applyLib` 切换（已渲染组件需配合子树 `:key` 重新渲染）：
 
 ```ts
-import { applyLib } from 'ucui'
+import { applyLib } from '@lacunist/ucui'
 
 applyLib(app, 'antd')   // 切到 ant-design-vue
 applyLib(app, 'element') // 切回 element-plus
@@ -56,8 +56,8 @@ applyLib(app, 'element') // 切回 element-plus
 `ucui` 全量入口包含双端适配器；只需一套时从子入口引入，配合打包器 tree-shaking：
 
 ```ts
-import { UcButton, UcInput } from 'ucui/element'
-import { UcButton, UcList } from 'ucui/antd'   // antd 端
+import { UcButton, UcInput } from '@lacunist/ucui/element'
+import { UcButton, UcList } from '@lacunist/ucui/antd'   // antd 端
 ```
 
 ## 服务式 API
@@ -74,7 +74,7 @@ await proxy.$messageBox.confirm('确认删除？', '提示')   // Promise<'confi
 - 所有组件的 props / emits 类型齐全，SFC 模板内 `<UcButton type="primary" />` 自动补全（GlobalComponents）
 - expose 实例方法：`ref<InstanceType<typeof UcForm>>()` 后 `formRef.value?.validate()` 有完整签名
 - 服务式 API 类型经 `ComponentCustomProperties` 全局生效
-- 公共类型从主入口导出：`import type { UcOption, UcTableColumn } from 'ucui'`
+- 公共类型从主入口导出：`import type { UcOption, UcTableColumn } from '@lacunist/ucui'`
 
 ## 组件清单（86 个）
 

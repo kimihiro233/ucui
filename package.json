@@ -1,5 +1,5 @@
 {
-  "name": "ucui",
+  "name": "@lacunist/ucui",
   "version": "0.1.0",
   "description": "一套代码，双端渲染的 Vue 3 组件库：element-plus / ant-design-vue 统一 API，运行时可切换",
   "keywords": [
@@ -45,6 +45,9 @@
     "LICENSE"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build --config vite.lib.config.js",

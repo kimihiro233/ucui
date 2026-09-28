@@ -3,9 +3,9 @@
 ## 安装
 
 ```sh
-npm install ucui vue element-plus
+npm install @lacunist/ucui vue element-plus
 # 或使用 ant-design-vue 端
-npm install ucui vue ant-design-vue
+npm install @lacunist/ucui vue ant-design-vue
 ```
 
 `element-plus` / `ant-design-vue` 是可选 peer 依赖：一个项目只需安装你使用的那一套；两套都装也可以，以 `lib` 选项为准。
@@ -14,7 +14,7 @@ npm install ucui vue ant-design-vue
 
 ```ts
 import { createApp } from 'vue'
-import UcUI from 'ucui'
+import UcUI from '@lacunist/ucui'
 import 'element-plus/dist/index.css' // 底层库样式由业务方引入
 import App from './App.vue'
 
@@ -58,8 +58,8 @@ const options = [
 不需要全局注册时，从子入口直接引入组件（配合打包器 tree-shaking）：
 
 ```ts
-import { UcButton, UcForm, UcFormItem } from 'ucui/element'
-import { UcButton, UcList } from 'ucui/antd'
+import { UcButton, UcForm, UcFormItem } from '@lacunist/ucui/element'
+import { UcButton, UcList } from '@lacunist/ucui/antd'
 ```
 
 ## Next

@@ -5,7 +5,7 @@ UcUI 的核心能力：**同一份业务代码，两种底层实现**。`install
 ## 基本用法
 
 ```ts
-import { applyLib } from 'ucui'
+import { applyLib } from '@lacunist/ucui'
 
 // app 来自 createApp —— 与 app.use(UcUI) 等价的底层 API
 applyLib(app, 'antd') // 整个 app 切到 ant-design-vue
@@ -24,7 +24,7 @@ applyLib(app, 'element') // 切回 element-plus
 
 <script setup>
 import { ref, watch, getCurrentInstance } from 'vue'
-import { applyLib } from 'ucui'
+import { applyLib } from '@lacunist/ucui'
 
 const { proxy } = getCurrentInstance()
 const app = proxy.$.appContext.app
