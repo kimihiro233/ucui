@@ -53,14 +53,17 @@ jobs:
       - name: 预览打包内容（npm pack dry-run）
         run: npm pack --dry-run
 
-      - name: 清空可能残留的 auth token，确保走 OIDC
+      - name: 删除项目级 .npmrc，确保走 OIDC Trusted Publisher
         run: |
-          echo "=== .npmrc 内容（脱敏前） ==="
-          cat ~/.npmrc 2>/dev/null || echo "(无用户级 .npmrc)"
-          # 移除 .npmrc 中所有 auth token 行，让 --provenance 触发 OIDC
-          npm config delete //registry.npmjs.org/:_authToken || true
-          echo "=== 确认 NODE_AUTH_TOKEN 为空 ==="
-          echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}"
+          # setup-node 带 registry-url 会在项目级 .npmrc 写入 _authToken=${NODE_AUTH_TOKEN}
+          # 空 token 会让 npm 走 token 认证（ENEEDAUTH）而非 OIDC，必须删掉项目级 .npmrc
+          echo "=== 删除前 .npmrc ==="
+          cat .npmrc 2>/dev/null || echo "(无项目级 .npmrc)"
+          rm -f .npmrc
+          echo "=== 已删除，剩余 .npmrc 文件 ==="
+          ls -la ~/.npmrc 2>/dev/null || echo "(无用户级 .npmrc)"
+          echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}（应为 0）"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL 存在: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo yes || echo no)"
 
       - name: Publish（正式 → latest / 预发布 → beta）
         run: |
