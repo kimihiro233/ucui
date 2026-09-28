@@ -4,32 +4,23 @@ name: Publish to npm
 #   - tag 必须是 v 前缀且与 package.json version 一致（如 v0.1.0）
 #   - 正式 Release → npm latest 标签
 #   - Pre-release（勾选 "Set as a pre-release"）→ npm beta 标签
-# 前置：仓库 Settings → Secrets and variables → Actions 添加 NPM_TOKEN（npm Automation Token）
+# 认证：npm Trusted Publisher（OIDC），无需 NPM_TOKEN secret。
+#       需在 npmjs.com 包设置页 → Publishing Access → Add a GitHub Actions Trusted Publisher
+#       仓库：kimihiro233/ucui，workflow 名：publish.yml
 on:
   release:
     types: [published]
 
 permissions:
   contents: read
-  id-token: write # npm provenance 来源证明所需
+  id-token: write # OIDC 认证 + npm provenance 来源证明所需
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: 诊断：确认 NPM_TOKEN secret 已配置
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::仓库未配置 NPM_TOKEN secret，或名称不匹配。请到 Settings → Secrets and variables → Actions 检查。"
-            exit 1
-          else
-            echo "NPM_TOKEN 已配置（长度 ${#NODE_AUTH_TOKEN}），不打印值"
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
