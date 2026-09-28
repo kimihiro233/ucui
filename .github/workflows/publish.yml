@@ -16,9 +16,20 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: 诊断：确认 NPM_TOKEN secret 已配置
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::仓库未配置 NPM_TOKEN secret，或名称不匹配。请到 Settings → Secrets and variables → Actions 检查。"
+            exit 1
+          else
+            echo "NPM_TOKEN 已配置（长度 ${#NODE_AUTH_TOKEN}），不打印值"
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,5 +67,3 @@ jobs:
           else
             npm publish --provenance
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
