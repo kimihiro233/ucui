@@ -1,12 +1,13 @@
 name: Publish to npm
 
-# 发布方式：在 GitHub 仓库 Releases 页面创建并发布 Release
-#   - tag 必须是 v 前缀且与 package.json version 一致（如 v0.1.0）
-#   - 正式 Release → npm latest 标签
-#   - Pre-release（勾选 "Set as a pre-release"）→ npm beta 标签
+# 发布方式：GitHub Release → CI 推送到 npm 暂存区（stage）→ 人工 approve 才真正上架
+#   1. 在 GitHub Releases 页面创建并发布 Release（tag 必须是 v 前缀且与 package.json version 一致）
+#   2. CI 跑测试 + 构建，执行 npm stage publish --provenance，版本进入 npm 暂存队列
+#   3. 人工去 npmjs.com 包页 或 CLI 执行 npm stage approve 批准（需 2FA）→ 正式发布
+#   优点：每个版本都有人工 + 2FA 把关；缺点：每次发布多一步人工批准
 # 认证：npm Trusted Publisher（OIDC），无需 NPM_TOKEN secret。
 #       需在 npmjs.com 包设置页 → Publishing Access → Add a GitHub Actions Trusted Publisher
-#       仓库：kimihiro233/ucui，workflow 名：publish.yml
+#       仓库：kimihiro233/ucui，workflow 名：publish.yml，权限只需 "npm stage publish"
 on:
   release:
     types: [published]
@@ -16,7 +17,7 @@ permissions:
   id-token: write # OIDC 认证 + npm provenance 来源证明所需
 
 jobs:
-  publish:
+  stage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,7 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
         # registry-url 生成 .npmrc（_authToken=${NODE_AUTH_TOKEN}，未设则为空）
-        # 配合下方 npm publish --provenance 走 OIDC Trusted Publisher，无需 NPM_TOKEN
+        # 配合下方 npm stage publish --provenance 走 OIDC Trusted Publisher，无需 NPM_TOKEN
 
       - name: Install dependencies
         run: npm ci
@@ -48,7 +49,7 @@ jobs:
             echo "::error::package.json 版本 ($PKG_VERSION) 与 Release tag ($GITHUB_REF_NAME) 不一致，应将 package.json 改为 $TAG_VERSION 后重新发布 Release"
             exit 1
           fi
-          echo "发布版本: $PKG_VERSION (prerelease=${{ github.event.release.prerelease }})"
+          echo "暂存版本: $PKG_VERSION (prerelease=${{ github.event.release.prerelease }})"
 
       - name: 预览打包内容（npm pack dry-run）
         run: npm pack --dry-run
@@ -60,15 +61,8 @@ jobs:
           echo "=== 删除前 .npmrc ==="
           cat .npmrc 2>/dev/null || echo "(无项目级 .npmrc)"
           rm -f .npmrc
-          echo "=== 已删除，剩余 .npmrc 文件 ==="
-          ls -la ~/.npmrc 2>/dev/null || echo "(无用户级 .npmrc)"
           echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}（应为 0）"
           echo "ACTIONS_ID_TOKEN_REQUEST_URL 存在: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo yes || echo no)"
 
-      - name: Publish（正式 → latest / 预发布 → beta）
-        run: |
-          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
-            npm publish --provenance --tag beta
-          else
-            npm publish --provenance
-          fi
+      - name: 推送到 npm 暂存区（stage publish，待人工 approve）
+        run: npm stage publish --provenance
