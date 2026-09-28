@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kimihiro233/ucui.git"
+    "url": "https://github.com/kimihiro233/ucui"
   },
   "type": "module",
   "types": "./types/index.d.ts",
