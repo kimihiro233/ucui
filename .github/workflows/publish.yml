@@ -27,10 +27,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: npm
-        # registry-url 生成 .npmrc（_authToken=${NODE_AUTH_TOKEN}，未设则为空）
-        # 配合下方 npm stage publish --provenance 走 OIDC Trusted Publisher，无需 NPM_TOKEN
+        # 不设 registry-url：避免 setup-node 生成带 _authToken 的 .npmrc 干扰 OIDC
+        # npm 默认 registry 即 https://registry.npmjs.org，stage publish 配合 --provenance 走 Trusted Publisher
+
+      - name: 升级 npm 到 11+（npm stage 命令需要）
+        run: |
+          npm install -g npm@latest
+          echo "npm 版本: $(npm --version)"
+          npm stage --help >/dev/null 2>&1 && echo "npm stage 可用" || { echo "npm stage 不可用，npm 版本过低"; exit 1; }
 
       - name: Install dependencies
         run: npm ci
@@ -54,15 +59,7 @@ jobs:
       - name: 预览打包内容（npm pack dry-run）
         run: npm pack --dry-run
 
-      - name: 删除项目级 .npmrc，确保走 OIDC Trusted Publisher
-        run: |
-          # setup-node 带 registry-url 会在项目级 .npmrc 写入 _authToken=${NODE_AUTH_TOKEN}
-          # 空 token 会让 npm 走 token 认证（ENEEDAUTH）而非 OIDC，必须删掉项目级 .npmrc
-          echo "=== 删除前 .npmrc ==="
-          cat .npmrc 2>/dev/null || echo "(无项目级 .npmrc)"
-          rm -f .npmrc
-          echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}（应为 0）"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL 存在: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo yes || echo no)"
-
       - name: 推送到 npm 暂存区（stage publish，待人工 approve）
-        run: npm stage publish --provenance
+        run: |
+          echo "NODE_AUTH_TOKEN 长度: ${#NODE_AUTH_TOKEN}（应为 0，走 OIDC）"
+          npm stage publish --provenance
