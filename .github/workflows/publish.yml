@@ -26,8 +26,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: npm
+        # 注意：不设 registry-url，避免 setup-node 生成带空 _authToken 的 .npmrc
+        # 干扰 OIDC Trusted Publisher 认证
 
       - name: Install dependencies
         run: npm ci
